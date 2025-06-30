@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Web Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .scraper-controls {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: white;
+            color: #3498db;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .selector-input {
+            display: flex;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .selector-input input {
+            flex: 1;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .result-url {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .result-content {
+            display: grid;
+            gap: 15px;
+        }
+
+        .content-section {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .content-section h4 {
+            color: #3498db;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .content-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .content-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f2f6;
+        }
+
+        .content-list li:last-child {
+            border-bottom: none;
+        }
+
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .multiple-urls {
+            min-height: 120px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .selector-input {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕷️ Advanced Web Scraper</h1>
+            <p>Extract data from websites with Python, BeautifulSoup & Scrapy</p>
+        </div>
+
+        <div class="main-content">
+            <div class="scraper-controls">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('single')">Single Page</button>
+                    <button class="tab" onclick="switchTab('multiple')">Multiple Pages</button>
+                    <button class="tab" onclick="switchTab('table')">Table Data</button>
+                </div>
+
+                <!-- Single Page Scraping -->
+                <div id="single-tab" class="tab-content active">
+                    <div class="form-group">
+                        <label for="single-url">Website URL</label>
+                        <input type="url" id="single-url" placeholder="https://example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Custom Selectors (Optional)</label>
+                        <div id="selectors-container">
+                            <div class="selector-input">
+                                <input type="text" placeholder="Field name (e.g., 'titles')" class="selector-name">
+                                <input type="text" placeholder="CSS Selector (e.g., 'h2.title')" class="selector-value">
+                                <button class="btn btn-secondary" onclick="removeSelector(this)">Remove</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="addSelector()">Add Selector</button>
+                    </div>
+
+                    <button class="btn" onclick="scrapeSingle()">🔍 Scrape Website</button>
+                </div>
+
+                <!-- Multiple Pages Scraping -->
+                <div id="multiple-tab" class="tab-content">
+                    <div class="form-group">
+                        <label for="multiple-urls">Website URLs (one per line)</label>
+                        <textarea id="multiple-urls" class="multiple-urls" placeholder="https://example1.com&#10;https://example2.com&#10;https://example3.com"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="delay">Delay between requests (seconds)</label>
+                        <input type="number" id="delay" value="1" min="0.5" step="0.5">
+                    </div>
+
+                    <button class="btn" onclick="scrapeMultiple()">🔍 Scrape Multiple Pages</button>
+                </div>
+
+                <!-- Table Data Scraping -->
+                <div id="table-tab" class="tab-content">
+                    <div class="form-group">
+                        <label for="table-url">Website URL with Tables</label>
+                        <input type="url" id="table-url" placeholder="https://example.com/data-table" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="table-selector">Table CSS Selector</label>
+                        <input type="text" id="table-selector" value="table" placeholder="table, .data-table, #main-table">
+                    </div>
+
+                    <button class="btn" onclick="scrapeTable()">🔍 Scrape Table Data</button>
+                </div>
+            </div>
+
+            <div id="results-section" class="results-section" style="display: none;">
+                <div class="stats" id="stats-container"></div>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-success" onclick="exportToCsv()">📊 Export to CSV</button>
+                    <button class="btn btn-secondary" onclick="clearResults()">🗑️ Clear Results</button>
+                </div>
+                <div id="results-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scrapedData = [];
+        const API_BASE = 'http://localhost:5000/api';
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function addSelector() {
+            const container = document.getElementById('selectors-container');
+            const selectorDiv = document.createElement('div');
+            selectorDiv.className = 'selector-input';
+            selectorDiv.innerHTML = `
+                <input type="text" placeholder="Field name (e.g., 'titles')" class="selector-name">
+                <input type="text" placeholder="CSS Selector (e.g., 'h2.title')" class="selector-value">
+                <button class="btn btn-secondary" onclick="removeSelector(this)">Remove</button>
+            `;
+            container.appendChild(selectorDiv);
+        }
+
+        function removeSelector(button) {
+            button.parentElement.remove();
+        }
+
+        function getSelectors() {
+            const selectors = {};
+            const selectorInputs = document.querySelectorAll('.selector-input');
+            
+            selectorInputs.forEach(input => {
+                const name = input.querySelector('.selector-name').value.trim();
+                const value = input.querySelector('.selector-value').value.trim();
+                
+                if (name && value) {
+                    selectors[name] = value;
+                }
+            });
+            
+            return selectors;
+        }
+
+        function showLoading() {
+            const resultsSection = document.getElementById('results-section');
+            const resultsContainer = document.getElementById('results-container');
+            
+            resultsSection.style.display = 'block';
+            resultsContainer.innerHTML = '<div class="loading">Scraping website data...</div>';
+        }
+
+        function hideLoading() {
+            const loadingElement = document.querySelector('.loading');
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+
+        function updateStats() {
+            const statsContainer = document.getElementById('stats-container');
+            const totalPages = scrapedData.length;
+            const successfulScrapes = scrapedData.filter(item => !item.error).length;
+            const errors = scrapedData.filter(item => item.error).length;
+            
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalPages}</div>
+                    <div class="stat-label">Total Pages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${successfulScrapes}</div>
+                    <div class="stat-label">Successful</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${errors}</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+            `;
+        }
+
+        function displayResults(data) {
+            hideLoading();
+            
+            if (Array.isArray(data)) {
+                scrapedData = data;
+            } else {
+                scrapedData = [data];
+            }
+            
+            updateStats();
+            
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '';
+            
+            scrapedData.forEach((item, index) => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result-item';
+                
+                if (item.error) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>Error scraping ${item.url}:</strong><br>
+                            ${item.error}
+                        </div>
+                    `;
+                } else if (item.tables) {
+                    // Table data display
+                    let tablesHtml = '';
+                    item.tables.forEach((table, tableIndex) => {
+                        tablesHtml += `
+                            <div class="content-section">
+                                <h4>Table ${tableIndex + 1} (${table.total_rows} rows)</h4>
+                                <div style="overflow-x: auto;">
+                                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+                                        <thead>
+                                            <tr style="background: #f8f9fa;">
+                                                ${table.headers.map(header => `<th style="border: 1px solid #ddd; padding: 8px;">${header}</th>`).join('')}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${table.data.slice(0, 10).map(row => `
+                                                <tr>
+                                                    ${row.map(cell => `<td style="border: 1px solid #ddd; padding: 8px;">${cell}</td>`).join('')}
+                                                </tr>
+                                            `).join('')}
+                                            ${table.data.length > 10 ? `<tr><td colspan="${table.headers.length}" style="text-align: center; padding: 8px; font-style: italic;">... and ${table.data.length - 10} more rows</td></tr>` : ''}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result-header">
+                            <div>
+                                <div class="result-title">${item.url}</div>
+                                <div class="result-url">Scraped at: ${new Date(item.scraped_at).toLocaleString()}</div>
+                            </div>
+                        </div>
+                        <div class="result-content">
+                            ${tablesHtml}
+                        </div>
+                    `;
+                } else {
+                    // Regular content display
+                    let contentHtml = '';
+                    
+                    for (const [key, value] of Object.entries(item.content || {})) {
+                        if (Array.isArray(value) && value.length > 0) {
+                            contentHtml += `
+                                <div class="content-section">
+                                    <h4>${key.charAt(0).toUpperCase() + key.slice(1)} (${value.length})</h4>
+                                    <ul class="content-list">
+                                        ${value.slice(0, 10).map(item => {
+                                            if (typeof item === 'object' && item.text) {
+                                                return `<li><strong>${item.text}</strong> - <a href="${item.href}" target="_blank">${item.href}</a></li>`;
+                                            } else if (typeof item === 'object' && item.alt !== undefined) {
+                                                return `<li><img src="${item.src}" alt="${item.alt}" style="max-width: 100px; height: auto;"> - ${item.alt || 'No alt text'}</li>`;
+                                            } else {
+                                                return `<li>${item}</li>`;
+                                            }
+                                        }).join('')}
+                                        ${value.length > 10 ? `<li><em>... and ${value.length - 10} more items</em></li>` : ''}
+                                    </ul>
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result-header">
+                            <div>
+                                <div class="result-title">${item.title || 'No title'}</div>
+                                <div class="result-url">${item.url}</div>
+                            </div>
+                        </div>
+                        <div class="result-content">
+                            ${contentHtml || '<p>No content extracted</p>'}
+                        </div>
+                    `;
+                }
+                
+                resultsContainer.appendChild(resultDiv);
+            });
+        }
+
+        async function scrapeSingle() {
+            const url = document.getElementById('single-url').value.trim();
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+            
+            const selectors = getSelectors();
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/scrape`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        type: 'basic',
+                        selectors: selectors
+                    })
+                });
+                
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                hideLoading();
+                alert('Error: Unable to connect to the scraping server. Make sure the Python Flask server is running on port 5000.');
+                console.error('Error:', error);
+            }
+        }
+
+        async function scrapeMultiple() {
+            const urlsText = document.getElementById('multiple-urls').value.trim();
+            if (!urlsText) {
+                alert('Please enter URLs');
+                return;
+            }
+            
+            const urls = urlsText.split('\n').filter(url => url.trim()).map(url => url.trim());
+            const delay = parseFloat(document.getElementById('delay').value) || 1;
+            const selectors = getSelectors();
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/scrape-multiple`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        urls: urls,
+                        selectors: selectors,
+                        delay: delay
+                    })
+                });
+                
+                const data = await response.json();
+                displayResults(data.results);
+            } catch (error) {
+                hideLoading();
+                alert('Error: Unable to connect to the scraping server. Make sure the Python Flask server is running on port 5000.');
+                console.error('Error:', error);
+            }
+        }
+
+        async function scrapeTable() {
+            const url = document.getElementById('table-url').value.trim();
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+            
+            const tableSelector = document.getElementById('table-selector').value.trim() || 'table';
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/scrape`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        type: 'table',
+                        table_selector: tableSelector
+                    })
+                });
+                
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                hideLoading();
+                alert('Error: Unable to connect to the scraping server. Make sure the Python Flask server is running on port 5000.');
+                console.error('Error:', error);
+            }
+        }
+
+        async function exportToCsv() {
+            if (scrapedData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/export-csv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: scrapedData
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.csv_data) {
+                    // Create and download CSV file
+                    const blob = new Blob([result.csv_data], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `scraped_data_${new Date().toISOString().slice(0, 10)}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert('Error exporting CSV: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error exporting CSV: Unable to connect to server');
+                console.error('Error:', error);
+            }
+        }
+
+        function clearResults() {
+            scrapedData = [];
+            document.getElementById('results-section').style.display = 'none';
+            document.getElementById('results-container').innerHTML = '';
+            document.getElementById('stats-container').innerHTML = '';
+        }
+
+        // Add some sample URLs for quick testing
+        function loadSampleUrls() {
+            const sampleUrls = [
+                'https://httpbin.org/html',
+                'https://example.com',
+                'https://httpbin.org/json'
+            ];
+            
+            document.getElementById('multiple-urls').value = sampleUrls.join('\n');
+        }
+
+        // Initialize with sample selector
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add some helpful placeholder text
+            const singleUrl = document.getElementById('single-url');
+            singleUrl.placeholder = 'https://example.com';
+            
+            // Add sample selectors
+            const firstNameInput = document.querySelector('.selector-name');
+            const firstValueInput = document.querySelector('.selector-value');
+            if (firstNameInput && firstValueInput) {
+                firstNameInput.placeholder = 'titles';
+                firstValueInput.placeholder = 'h1, h2, h3';
+            }
+        });
+    </script>
+</html>
