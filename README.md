@@ -107,19 +107,8 @@ Guidelines
 - Include tests for critical parsing logic where possible.
 - Document any new scraper or tool in this README or add a dedicated example file.
 
-License
--------
-Add a LICENSE file to the repository. If you want a permissive license, consider MIT or Apache-2.0. (No license file is included by default—please add one to make usage terms explicit.)
-
 Contact
 -------
 Maintainer: sreeramakhil  
 GitHub: https://github.com/sreeramakhil/Web-Scraping
 
-Notes / Next steps
-------------------
-- If you want, I can:
-  - generate a requirements.txt based on imports,
-  - add a CONTRIBUTING.md,
-  - create example scripts for BeautifulSoup and Selenium,
-  - or create a LICENSE file (MIT/Apache) and add it to the repo.
